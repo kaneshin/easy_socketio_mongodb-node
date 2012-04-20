@@ -48,33 +48,58 @@ var io = socketio.listen(app);
 
 io.sockets.on('connection', function(socket) {
 
-  // Event: search
+  // event: search
   socket.on('search', function(data) {
     Easy.find({"title": data}, function(err, result) {
-      if ( !err ) socket.emit('search list', result);
+      if( err ) {
+        console.log(err);
+      } else {
+        socket.emit('search list', result);
+      }
     });
   });
 
+  // event: register
   socket.on('register', function(data) {
     var easy = new Easy();
     easy.title = data;
     easy.date = new Date();
-    easy.save(function(err) { if( err ) console.log(err); });
-    socket.broadcast.emit('registered', data);
+    easy.save(function(err) {
+      if( err ) {
+        console.log(err);
+      } else {
+          socket.broadcast.emit('registered', data);
+      }
+    });
     Easy.find({}, function(err, result) {
-      if ( !err ) socket.broadcast.emit('rewrite remove list', result);
+      if( err ) {
+        console.log(err);
+      } else {
+        socket.emit('data list', result);
+        socket.broadcast.emit('data list', result);
+        socket.broadcast.emit('remove list', result);
+      }
     });
   });
 
+  // event: remove
   socket.on('remove', function(id) {
-    // remove data of _id from mongodb
-    Easy.remove({"_id": id}, function(err) { if( err ) console.log(err); });
-    // need to rewrite other client
-    Easy.find({}, function(err, result) {
-      console.log(result);
-      if ( !err ) socket.broadcast.emit('rewrite remove list', result);
+    Easy.remove({"_id": id}, function(err) {
+      if( err ) {
+        console.log(err);
+      } else {
+        Easy.find({}, function(err, result) {
+          if( err ) {
+            console.log(err);
+          } else {
+            socket.broadcast.emit('data list', result);
+            socket.broadcast.emit('remove list', result);
+          }
+        });
+      }
     });
   });
+
 });
 
 

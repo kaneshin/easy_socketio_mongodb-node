@@ -8,17 +8,35 @@
     <script>
       $(function() {
         var socket = io.connect('ws://localhost:3000')
+          , $data_list = $('#data_list')
           , $search_txt = $('#search_txt')
           , $search_btn = $('#search_btn')
           , $search_list = $('#search_list')
-          , $txt = $('#text')
-          , $reg = $('#register')
-          , $remove_list = $('#remove_list')
+          , $register_txt = $('#register_txt')
+          , $register_btn = $('#register_btn')
+          , $register_result = $('#register_result')
           , $remove_btn = $('.remove')
-          , $reg_result = $('#reg_result')
+          , $remove_list = $('#remove_list')
           ;
 
-        // Search page
+        // index page
+        var data_list_node = function(data) {
+          return ($('<li>').attr('id', data._id).attr('class', 'data')
+            .append(data.title)
+            .append($('<ul>').append($('<li>').attr('class', 'date')
+            .append(data.date)
+            )
+            )
+          );
+        };
+        socket.on('data list', function(chunk) {
+          $data_list.html('');
+          for( var i = chunk.length - 1; i >= 0; i-- ) {
+            $data_list.append(data_list_node(chunk[i]));
+          }
+        });
+
+        // search page
         var do_search = function() {
           var data = $search_txt.val();
           if ( data != '' ) socket.emit('search', data);
@@ -28,10 +46,8 @@
             .append(data.title)
           );
         };
-
         $search_btn.click(do_search);
         $search_txt.keydown(function(e) { if ( e.which == 13 ) { do_search(); }});
-
         socket.on('search list', function(chunk) {
           console.log(chunk);
           $search_list.html('');
@@ -40,38 +56,34 @@
           }
         });
 
-        // Register page
-        var do_reg = function() {
-          var data = $txt.val();
+        // register page
+        var do_register = function() {
+          var data = $register_txt.val();
           if ( data != '' ) {
             socket.emit('register', data);
-            $reg_result.text('Registered "' + data + '" into MongoDB.');
-            $txt.val('');
+            $register_result.text('Registered "' + data + '" into MongoDB.');
+            $register_txt.val('');
           }
         };
-        $reg.click(do_reg);
-        $txt.keydown(function(e) { if ( e.which == 13 ) { do_reg(); }});
         socket.on('registered', function(data) {
-          $reg_result.text('Other clients registered "' + data + '" into MongoDB.');
+          $register_result.text('Other clients registered "' + data + '" into MongoDB.');
         });
+        $register_btn.click(do_register);
+        $register_txt.keydown(function(e) { if ( e.which == 13 ) { do_register(); }});
 
-        // Remove page
+        // remove page
         $remove_btn.live('click', function() {
           var _id = $(this).parent().attr('id');
           socket.emit('remove', _id);
           $('#' + _id).remove();
         });
-        // rewrite for remove
         var remove_list_node = function(data) {
           return ($('<li>').attr('id', data._id).attr('class', 'data')
-            .append(
-              $('<input>').attr('class', 'remove')
-              .attr('type', 'button').attr('value', 'remove')
-            ).append(data.title)
+            .append($('<input>').attr('class', 'remove')
+            .attr('type', 'button').attr('value', 'remove')).append(data.title)
           );
         };
-        socket.on('rewrite remove list', function(chunk) {
-          console.log(chunk);
+        socket.on('remove list', function(chunk) {
           $remove_list.html('');
           for( var i = chunk.length - 1; i >= 0; i-- ) {
             $remove_list.append(remove_list_node(chunk[i]));
