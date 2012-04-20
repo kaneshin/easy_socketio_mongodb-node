@@ -8,12 +8,37 @@
     <script>
       $(function() {
         var socket = io.connect('ws://localhost:3000')
+          , $search_txt = $('#search_txt')
+          , $search_btn = $('#search_btn')
+          , $search_list = $('#search_list')
           , $txt = $('#text')
           , $reg = $('#register')
           , $remove_list = $('#remove_list')
           , $remove_btn = $('.remove')
           , $reg_result = $('#reg_result')
           ;
+
+        // Search page
+        var do_search = function() {
+          var data = $search_txt.val();
+          if ( data != '' ) socket.emit('search', data);
+        };
+        var search_list_node = function(data) {
+          return ($('<li>').attr('id', data._id).attr('class', 'data')
+            .append(data.title)
+          );
+        };
+
+        $search_btn.click(do_search);
+        $search_txt.keydown(function(e) { if ( e.which == 13 ) { do_search(); }});
+
+        socket.on('search list', function(chunk) {
+          console.log(chunk);
+          $search_list.html('');
+          for( var i = chunk.length - 1; i >= 0; i-- ) {
+            $search_list.append(search_list_node(chunk[i]));
+          }
+        });
 
         // Register page
         var do_reg = function() {
@@ -46,6 +71,7 @@
           );
         };
         socket.on('rewrite remove list', function(chunk) {
+          console.log(chunk);
           $remove_list.html('');
           for( var i = chunk.length - 1; i >= 0; i-- ) {
             $remove_list.append(remove_list_node(chunk[i]));

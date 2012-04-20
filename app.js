@@ -47,6 +47,14 @@ console.log("Express server listening on port %d in %s mode", app.address().port
 var io = socketio.listen(app);
 
 io.sockets.on('connection', function(socket) {
+
+  // Event: search
+  socket.on('search', function(data) {
+    Easy.find({"title": data}, function(err, result) {
+      if ( !err ) socket.emit('search list', result);
+    });
+  });
+
   socket.on('register', function(data) {
     var easy = new Easy();
     easy.title = data;
