@@ -1,2 +1,22 @@
 <h1><%= title %></h1>
 <p>Welcome to <%= title %></p>
+
+<p>
+<a href="/search">search</a>
+<a href="/register">register</a>
+<a href="/remove">remove</a>
+</p>
+
+<input id="text" type="text" />
+<input id="register" type="button" value="register" />
+
+<ul id="datalist">
+<% for(var i = datas.length - 1; i >= 0; i--) { %>
+    <li id="<%= datas[i]._id %>" class="data"><%= datas[i].title %>
+        <ul>
+            <li class="date"><%= datas[i].date %></li>
+        </ul>
+    </li>
+<% } %>
+</ul>
+
