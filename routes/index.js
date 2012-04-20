@@ -3,19 +3,32 @@
  * GET home page.
  */
 
-exports.index = function(req, res){
-  res.render('index', { title: 'Express' })
+var Easy = require(__dirname + '/../public/javascripts/schema.js');
+
+exports.index = function(req, res) {
+  Easy.find({}, function(err, result) {
+    if ( !err ) {
+      res.render('index', {
+        title: 'Express'
+       ,datas: result
+      });
+    }
+  });
 };
 
 exports.search = function(req, res){
-  res.render('search', { title: 'Express' })
+  res.render('search', { title: 'Search' })
 };
 
 exports.register = function(req, res){
-  res.render('register', { title: 'Express' })
+  res.render('register', { title: 'Register' })
 };
 
-exports.delete = function(req, res){
-  res.render('delete', { title: 'Express' })
+exports.remove = function(req, res){
+  Easy.find({}, function(err, result) {
+    if ( !err ) {
+      res.render('remove', { title: 'Remove', chunk: result });
+    }
+  });
 };
 
