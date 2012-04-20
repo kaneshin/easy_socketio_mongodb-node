@@ -7,16 +7,16 @@
 <a href="/remove">remove</a>
 </p>
 
-<input id="text" type="text" />
-<input id="register" type="button" value="register" />
+<input id="register_txt" type="text" />
+<input id="register_btn" type="button" value="register" />
 
-<ul id="datalist">
+<ul id="data_list">
 <% for(var i = datas.length - 1; i >= 0; i--) { %>
-    <li id="<%= datas[i]._id %>" class="data"><%= datas[i].title %>
-        <ul>
-            <li class="date"><%= datas[i].date %></li>
-        </ul>
-    </li>
+  <li id="<%= datas[i]._id %>" class="data"><%= datas[i].title %>
+     <ul>
+        <li class="date"><%= datas[i].date %></li>
+      </ul>
+  </li>
 <% } %>
 </ul>
 
