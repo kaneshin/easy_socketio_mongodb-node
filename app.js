@@ -4,7 +4,9 @@
  */
 
 var express = require('express')
-  , routes = require('./routes');
+  , routes = require('./routes')
+  , Easy = require(__dirname + '/public/javascripts/schema.js')
+  , socketio = require('socket.io');
 
 var app = module.exports = express.createServer();
 
@@ -34,8 +36,37 @@ app.configure('production', function(){
 app.get('/', routes.index);
 app.get('/search', routes.search);
 app.get('/register', routes.register);
-app.get('/delete', routes.delete);
+app.get('/remove', routes.remove);
 
 app.listen(3000);
 console.log("Express server listening on port %d in %s mode", app.address().port, app.settings.env);
+
+
+// My Configuration
+
+var io = socketio.listen(app);
+
+io.sockets.on('connection', function(socket) {
+  socket.on('register', function(data) {
+    var easy = new Easy();
+    easy.title = data;
+    easy.date = new Date();
+    easy.save(function(err) { if( err ) console.log(err); });
+    socket.broadcast.emit('registered', data);
+    Easy.find({}, function(err, result) {
+      if ( !err ) socket.broadcast.emit('rewrite remove list', result);
+    });
+  });
+
+  socket.on('remove', function(id) {
+    // remove data of _id from mongodb
+    Easy.remove({"_id": id}, function(err) { if( err ) console.log(err); });
+    // need to rewrite other client
+    Easy.find({}, function(err, result) {
+      console.log(result);
+      if ( !err ) socket.broadcast.emit('rewrite remove list', result);
+    });
+  });
+});
+
 

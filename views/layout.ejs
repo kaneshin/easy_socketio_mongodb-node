@@ -3,6 +3,57 @@
   <head>
     <title><%= title %></title>
     <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script>
+      $(function() {
+        var socket = io.connect('ws://localhost:3000')
+          , $txt = $('#text')
+          , $reg = $('#register')
+          , $remove_list = $('#remove_list')
+          , $remove_btn = $('.remove')
+          , $reg_result = $('#reg_result')
+          ;
+
+        // Register page
+        var do_reg = function() {
+          var data = $txt.val();
+          if ( data != '' ) {
+            socket.emit('register', data);
+            $reg_result.text('Registered "' + data + '" into MongoDB.');
+            $txt.val('');
+          }
+        };
+        $reg.click(do_reg);
+        $txt.keydown(function(e) { if ( e.which == 13 ) { do_reg(); }});
+        socket.on('registered', function(data) {
+          $reg_result.text('Other clients registered "' + data + '" into MongoDB.');
+        });
+
+        // Remove page
+        $remove_btn.live('click', function() {
+          var _id = $(this).parent().attr('id');
+          socket.emit('remove', _id);
+          $('#' + _id).remove();
+        });
+        // rewrite for remove
+        var remove_list_node = function(data) {
+          return ($('<li>').attr('id', data._id).attr('class', 'data')
+            .append(
+              $('<input>').attr('class', 'remove')
+              .attr('type', 'button').attr('value', 'remove')
+            ).append(data.title)
+          );
+        };
+        socket.on('rewrite remove list', function(chunk) {
+          $remove_list.html('');
+          for( var i = chunk.length - 1; i >= 0; i-- ) {
+            $remove_list.append(remove_list_node(chunk[i]));
+          }
+        });
+
+      });
+    </script>
   </head>
   <body>
     <%- body %>
