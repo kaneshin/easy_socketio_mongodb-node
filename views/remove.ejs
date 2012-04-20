@@ -1,0 +1,14 @@
+<h1><%= title %></h1>
+<p>Welcome to <%= title %></p>
+
+<p>
+<a href="/">To top</a>
+</p>
+
+<ul id="remove_list">
+<% for( var i = chunk.length - 1; i >= 0; i-- ) { %>
+  <li id="<%= chunk[i]._id %>" class="data">
+    <input class="remove" type="button" value="remove" /><%= chunk[i].title %>
+  </li>
+<% } %>
+</ul>
